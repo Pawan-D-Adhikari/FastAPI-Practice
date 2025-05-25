@@ -1,5 +1,6 @@
 from ast import mod
-from importlib.resources import contents
+# from importlib.resources import contents
+from traceback import print_list
 from turtle import pos, title
 from fastapi import Depends, FastAPI ,Response, dependencies, status,HTTPException
 from fastapi.params import Body
@@ -38,7 +39,7 @@ def root():
 
 
 
-@app.get("/posts")
+@app.get("/posts",response_model=list[schema.PostResponse])
 def get_posts(db: Session=Depends( get_db)):
    posts=db.query(models.Posts).all()
    return posts
@@ -46,8 +47,8 @@ def get_posts(db: Session=Depends( get_db)):
 
 
 
-@app.post("/posts",status_code=status.HTTP_201_CREATED)
-def create_post(post:schema.Post,db: Session=Depends(get_db) ):
+@app.post("/posts",status_code=status.HTTP_201_CREATED,response_model=schema.PostResponse)
+def create_post(post:schema.PostCreate,db: Session=Depends(get_db) ):
 
     new_post=models.Posts(**post.model_dump())
     db.add(new_post)
@@ -59,7 +60,7 @@ def create_post(post:schema.Post,db: Session=Depends(get_db) ):
 
 
 
-@app.get("/post/{id}")
+@app.get("/post/{id}",response_model=schema.PostResponse)
 def get_post(id:int,db: Session=Depends(get_db)): 
    
 
@@ -83,19 +84,26 @@ def delete_post(id:int,db: Session=Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
-@app.put("/posts/{id}")
-def update_post(id:int,post: schema.Post,db: Session=Depends(get_db)):
-    # post_query=db.query(models.Posts).filter(models.Posts.id==id)
-    # db_post=post_query.first()
-    # if not db_post:
-    #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    # post_query.update(post.model_dump(),synchronize_session=False)
-    # db.commit()
-    # return {"data": post_query.first()}
-    post_query=db.query(models.Posts).filter(models.Posts.id==id)
-    post=post_query.first()
-    if not post:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-    post_query.update(post.dict(),synchronize_session=False)
+from fastapi import HTTPException, status
+
+@app.put("/posts/{id}",response_model=schema.PostResponse)
+def update_post(id: int, updated_post: schema.PostCreate, db: Session = Depends(get_db)):
+    post_query = db.query(models.Posts).filter(models.Posts.id == id)
+    existing_post = post_query.first()
+
+    if not existing_post:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
+
+    post_query.update(updated_post.model_dump(), synchronize_session=False)
     db.commit()
-    return {"data": post_query.first()}
+    return  post_query.first()
+
+
+@app.post("/users",status_code=status.HTTP_201_CREATED)
+def create_user(user:schema.userCreate, db: Session=Depends(get_db)):
+    new_user=models.User(**user.model_dump())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+    
