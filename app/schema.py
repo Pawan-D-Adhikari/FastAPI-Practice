@@ -1,4 +1,4 @@
-import email
+from datetime import datetime
 from importlib.resources import contents
 from tarfile import PAX_NUMBER_FIELDS
 from pydantic import BaseModel,EmailStr
@@ -14,10 +14,21 @@ class PostCreate(PostBase):
 class PostResponse(PostBase):
  
     id:int
+    created_at:datetime
     class Config:
-     orm_mode=True
+     from_attributes=True
     
 
 class userCreate(BaseModel):
     email:EmailStr
     password:str
+    
+class userResponse(BaseModel):
+    id:int
+    email:EmailStr
+    created_at:datetime
+    
+    
+    class Config:
+        from_attributes=True
+    
