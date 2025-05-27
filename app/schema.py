@@ -32,3 +32,6 @@ class userResponse(BaseModel):
     class Config:
         from_attributes=True
     
+class userLogin(BaseModel):
+    email:EmailStr
+    password:str
