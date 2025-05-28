@@ -2,7 +2,7 @@ import re
 from turtle import pos
 from fastapi import Depends,Response,FastAPI, status,HTTPException,APIRouter
 from sqlalchemy.orm import Session
-from  .. import models,schema
+from  .. import models,schema,oauth2
 from ..database import get_db
 from typing import List
 
@@ -22,8 +22,8 @@ def get_posts(db: Session=Depends( get_db)):
 
 
 @router.post("/",status_code=status.HTTP_201_CREATED,response_model=schema.PostResponse)
-def create_post(post:schema.PostCreate,db: Session=Depends(get_db) ):
-
+def create_post(post:schema.PostCreate,db: Session=Depends(get_db),user_id: int = Depends(oauth2.get_current_user)):
+    print(user_id)
     new_post=models.Posts(**post.model_dump())
     db.add(new_post)
     db.commit()

@@ -1,6 +1,5 @@
 from datetime import datetime
-from importlib.resources import contents
-from tarfile import PAX_NUMBER_FIELDS
+from typing import Optional
 from pydantic import BaseModel,EmailStr
 
 class PostBase(BaseModel):
@@ -35,3 +34,11 @@ class userResponse(BaseModel):
 class userLogin(BaseModel):
     email:EmailStr
     password:str
+    
+class Token(BaseModel):
+    access_token:str
+    token_type:str
+
+class TokenData(BaseModel):
+    id:Optional[int ] = None
+    
