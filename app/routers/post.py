@@ -1,5 +1,3 @@
-import re
-from turtle import pos
 from fastapi import Depends,Response,FastAPI, status,HTTPException,APIRouter
 from sqlalchemy.orm import Session
 from  .. import models,schema,oauth2
@@ -13,7 +11,7 @@ router=APIRouter(
 )
 
 @router.get("/",response_model=List[schema.PostResponse])
-def get_posts(db: Session=Depends( get_db)):
+def get_posts(db: Session=Depends( get_db),current_user: int = Depends(oauth2.get_current_user)):
    posts=db.query(models.Posts).all()
    return posts
 
@@ -22,8 +20,7 @@ def get_posts(db: Session=Depends( get_db)):
 
 
 @router.post("/",status_code=status.HTTP_201_CREATED,response_model=schema.PostResponse)
-def create_post(post:schema.PostCreate,db: Session=Depends(get_db),user_id: int = Depends(oauth2.get_current_user)):
-    print(user_id)
+def create_post(post:schema.PostCreate,db: Session=Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
     new_post=models.Posts(**post.model_dump())
     db.add(new_post)
     db.commit()
@@ -34,8 +31,8 @@ def create_post(post:schema.PostCreate,db: Session=Depends(get_db),user_id: int 
 
 
 
-@router.get("/{id}",response_model=schema.PostResponse)
-def get_single_post(id:int,db: Session=Depends(get_db)): 
+@router.get("/{id}",response_model=schema.PostResponse,)
+def get_single_post(id:int,db: Session=Depends(get_db),current_user: int = Depends(oauth2.get_current_user)): 
    
 
     post=db.query(models.Posts).filter(models.Posts.id==id).first()
@@ -47,7 +44,7 @@ def get_single_post(id:int,db: Session=Depends(get_db)):
 
 
 @router.delete("/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def delete_post(id:int,db: Session=Depends(get_db)):
+def delete_post(id:int,db: Session=Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
     del_post=db.query(models.Posts).filter(models.Posts.id==id)
     if not del_post.one():
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -59,7 +56,7 @@ def delete_post(id:int,db: Session=Depends(get_db)):
 
 
 @router.put("/{id}",response_model=schema.PostResponse)
-def update_post(id: int, updated_post: schema.PostCreate, db: Session = Depends(get_db)):
+def update_post(id: int, updated_post: schema.PostCreate, db: Session = Depends(get_db),current_user: int = Depends(oauth2.get_current_user)):
     post_query = db.query(models.Posts).filter(models.Posts.id == id)
     existing_post = post_query.first()
 
