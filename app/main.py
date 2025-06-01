@@ -1,9 +1,6 @@
 from ast import mod
 from fastapi import  FastAPI 
-from random import randrange
-from  psycopg2.extras import RealDictCursor
-import time
-from .database import engine,get_db
+from .database import engine
 from .routers import post,user,auth
 from . import database
 

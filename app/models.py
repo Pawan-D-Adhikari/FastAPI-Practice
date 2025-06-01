@@ -1,7 +1,8 @@
 from pickle import TRUE
-from annotated_types import  Timezone
-from sqlalchemy import TIMESTAMP, Column, ForeignKey ,Integer, Nullable,String,Boolean, text 
+from sqlalchemy import TIMESTAMP, Column, ForeignKey ,Integer,String,Boolean, text 
 from .database import Base
+from sqlalchemy.orm import relationship 
+
 
 class Posts(Base):
     __tablename__='posts'
@@ -12,6 +13,7 @@ class Posts(Base):
     published=Column(Boolean,server_default='True',nullable=False)
     created_at=Column(TIMESTAMP(timezone=TRUE),nullable=False,server_default=text('now()'))
     owner_id=Column(Integer,ForeignKey("users.id",ondelete="CASCADE"), nullable=False)
+    owner=relationship("User")
    
 
 class User(Base):
