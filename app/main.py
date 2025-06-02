@@ -1,13 +1,13 @@
-from ast import mod
 from fastapi import  FastAPI 
 from .database import engine
 from .routers import post,user,auth
-from . import database
+from . import database,config
 
 
 
 
 app=FastAPI()
+
 
 database.Base.metadata.create_all(bind=engine)
 app.include_router(post.router)
