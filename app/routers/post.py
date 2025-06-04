@@ -1,5 +1,6 @@
 from fastapi import Depends,Response, status,HTTPException,APIRouter
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from  .. import models,schema,oauth2
 from ..database import get_db
 from typing import List
@@ -10,11 +11,24 @@ router=APIRouter(
     tags=['Posts']
 )
 
-@router.get("/",response_model=List[schema.PostResponse])
-def get_posts(db: Session=Depends( get_db),current_user: int = Depends(oauth2.get_current_user),limit:int=10,skip:int=0,search: str = ""):
-   posts=db.query(models.Posts).filter(models.Posts.title.contains(search)).limit(limit).offset(skip).all()
-   print(current_user.id)
-   return posts
+# @router.get("/",response_model=schema.PostOut)
+# def get_posts(db: Session=Depends( get_db),current_user: int = Depends(oauth2.get_current_user),limit:int=10,skip:int=0,search: str = ""):
+#     results=db.query(models.Posts,func.count(models.Vote.post_id).label("votes")).join(
+#         models.Vote,models.Vote.post_id==models.Posts.id,isouter=True).group_by(
+#         models.Posts.id).all()
+    
+#     return  results
+
+@router.get("/",response_model=List[schema.PostOut])
+def get_posts(db: Session=Depends(get_db),current_user: int = Depends(oauth2.get_current_user),limit:int=10,skip:int=0,search: str = ""):
+    posts_query = db.query(models.Posts, func.count(models.Vote.post_id).label("votes")).join(
+        models.Vote, models.Vote.post_id == models.Posts.id, isouter=True
+    ).group_by(models.Posts.id)
+
+
+    posts = posts_query.all()
+
+    return [{"Post": post, "votes": votes} for post, votes in posts]
 
   
 
