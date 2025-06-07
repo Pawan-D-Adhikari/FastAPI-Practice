@@ -40,9 +40,12 @@ class PostOut(BaseModel):
 class userCreate(BaseModel):
     email:EmailStr
     password:str
-    
-
-    
+    class Config:
+        from_attributes=True
+        
+class userOtpverify(BaseModel):
+    id:int
+    otp:str
     
     class Config:
         from_attributes=True
